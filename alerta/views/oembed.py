@@ -1,11 +1,8 @@
 
+from urllib.parse import urlparse
+
 from flask import request, render_template, jsonify, current_app
 from flask_cors import cross_origin
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse  # type: ignore
 
 from alerta.app import db, qb
 from alerta.auth.decorators import permission

@@ -1,7 +1,6 @@
 
 import datetime
 
-import six
 from bson import ObjectId
 from flask import json
 
@@ -24,7 +23,7 @@ class CustomJSONEncoder(json.JSONEncoder):
 class DateTime(object):
     @staticmethod
     def parse(date_str):
-        if not isinstance(date_str, six.string_types):
+        if not isinstance(date_str, str):
             return
         try:
             return datetime.datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ')

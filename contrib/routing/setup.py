@@ -11,7 +11,7 @@ setuptools.setup(
     url='https://github.com/alerta/alerta-contrib',
     license='Apache License 2.0',
     author='Nick Satterly',
-    author_email='nick.satterly@theguardian.com',
+    author_email='nick.satterly@gmail.com',
     py_modules=['routing'],
     install_requires=[
         'requests',

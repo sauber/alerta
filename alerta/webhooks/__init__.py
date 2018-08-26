@@ -1,7 +1,6 @@
-import abc
+from abc import ABC, abstractmethod
 
 from flask import Blueprint, request, current_app
-from six import add_metaclass
 
 webhooks = Blueprint('webhooks', __name__)
 
@@ -19,13 +18,12 @@ def before_request():
     ))
 
 
-@add_metaclass(abc.ABCMeta)
-class WebhookBase(object):
+class WebhookBase(ABC):
 
     def __init__(self, name=None):
         self.name = name or self.__module__
 
-    @abc.abstractmethod
+    @abstractmethod
     def incoming(self, query_string, payload):
         """Parse webhook query string and/or payload in JSON or plain text and return an alert."""
         return

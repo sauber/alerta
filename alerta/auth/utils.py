@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 from flask import request, current_app
-from six import text_type
 from uuid import uuid4
 
 from alerta.exceptions import ApiError, NoCustomerMatch
@@ -14,7 +13,7 @@ try:
     import bcrypt  # type: ignore
 
     def generate_password_hash(password):
-        if isinstance(password, text_type):
+        if isinstance(password, str):
             password = password.encode('utf-8')
         return bcrypt.hashpw(password, bcrypt.gensalt(prefix=b'2a')).decode('utf-8')
 

@@ -34,7 +34,7 @@ setuptools.setup(
     url='https://github.com/guardian/alerta',
     license='Apache License 2.0',
     author='Nick Satterly',
-    author_email='nick.satterly@theguardian.com',
+    author_email='nick.satterly@gmail.com',
     packages=setuptools.find_packages(exclude=['tests']),
     install_requires=[
         'Flask>=0.10.1',
@@ -73,4 +73,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: System :: Monitoring',
     ],
+    python_requires='>=3.5'
 )

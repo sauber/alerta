@@ -1,6 +1,6 @@
 import json
 
-from flask import request, g, jsonify
+from flask import request, jsonify, current_app
 from flask_cors import cross_origin
 
 from alerta.app import qb
