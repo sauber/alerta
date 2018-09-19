@@ -8,7 +8,6 @@ from uuid import uuid4
 from flask import current_app
 
 from alerta.app import alarm, db, severity
-from alerta.models import status_code
 from alerta.models.history import History, RichHistory
 from alerta.utils.api import absolute_url
 from alerta.utils.format import DateTime
@@ -36,7 +35,7 @@ class Alert:
         self.correlate = kwargs.get('correlate', None) or list()
         if self.correlate and event not in self.correlate:
             self.correlate.append(event)
-        self.status = kwargs.get('status', None) or status_code.UNKNOWN
+        self.status = kwargs.get('status', None) or 'unknown'
         self.service = kwargs.get('service', None) or list()
         self.group = kwargs.get('group', None) or 'Misc'
         self.value = kwargs.get('value', None)
@@ -231,7 +230,7 @@ class Alert:
 
         previous_status, previous_value = db.get_status_and_value(self)
 
-        self.status = alarm.transition(
+        _, self.status = alarm.transition(
             previous_severity=self.severity,
             current_severity=self.severity,
             previous_status=previous_status,
@@ -272,7 +271,7 @@ class Alert:
         previous_status = db.get_status(self)
         self.trend_indication = severity.trend(self.previous_severity, self.severity)
 
-        self.status = alarm.transition(
+        _, self.status = alarm.transition(
             previous_severity=self.previous_severity,
             current_severity=self.severity,
             previous_status=previous_status,
@@ -309,8 +308,8 @@ class Alert:
 
     # create an alert
     def create(self):
-        if self.status == status_code.UNKNOWN:
-            self.status = alarm.transition(
+        if self.status == 'unknown':
+            _, self.status = alarm.transition(
                 previous_severity=current_app.config['DEFAULT_PREVIOUS_SEVERITY'],
                 current_severity=self.severity
             )
@@ -368,6 +367,30 @@ class Alert:
             update_time=datetime.utcnow()
         )
         return db.set_status(self.id, status, timeout, history)
+
+    def from_action(self, action, text='', timeout=None):
+        self.timeout = timeout or current_app.config['ALERT_TIMEOUT']
+        previous_status = db.get_status(self)
+
+        severity, status = alarm.transition(
+            previous_severity=self.previous_severity,
+            current_severity=self.severity,
+            previous_status=previous_status,
+            current_status=self.status,
+            action=action
+        )
+
+        history = History(
+            id=self.id,
+            event=self.event,
+            severity=self.severity if self.previous_severity != self.severity else None,
+            status=self.status,
+            text=text,
+            change_type='action',
+            update_time=datetime.utcnow()
+        )
+        db.set_severity_and_status(self.id, severity, status, self.timeout, history)
+        return severity, status
 
     def set_severity_and_status(self, severity, status, text='', timeout=None):
         timeout = timeout or current_app.config['ALERT_TIMEOUT']

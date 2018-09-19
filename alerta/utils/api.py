@@ -9,7 +9,7 @@ from flask import current_app, g, request
 from alerta.app import plugins
 from alerta.exceptions import (ApiError, BlackoutPeriod, RateLimit,
                                RejectException)
-from alerta.models import actions, status_code
+from alerta.models import actions
 
 
 def jsonp(func):
@@ -65,7 +65,7 @@ def process_alert(alert):
 
     skip_plugins = False
     for plugin in plugins.routing(alert):
-        if alert.status == status_code.BLACKOUT:
+        if alert.status == 'blackout':
             skip_plugins = True
             break
         try:
@@ -111,34 +111,15 @@ def process_alert(alert):
     return alert
 
 
-def process_action(alert, action):
-    severity = alert.severity
-    status = alert.status
-
-    if action == actions.ACTION_UNACK:
-        status = status_code.OPEN
-
-    if action == actions.ACTION_SHELVE:
-        status = status_code.SHELVED
-
-    if action == actions.ACTION_UNSHELVE:
-        status = status_code.OPEN
-
-    if action == actions.ACTION_ACK:
-        status = status_code.ACK
-
-    if action == actions.ACTION_CLOSE:
-        severity = current_app.config['DEFAULT_NORMAL_SEVERITY']
-        status = status_code.CLOSED
-
-    return severity, status
+def process_action(alert, action, text):
+    return alert.from_action(action, text)
 
 
 def process_status(alert, status, text):
 
     updated = None
     for plugin in plugins.routing(alert):
-        if alert.status == status_code.BLACKOUT:
+        if alert.status == 'blackout':
             break
         try:
             updated = plugin.status_change(alert, status, text)
